@@ -1,8 +1,11 @@
-package accounts;
+package accountancy.accounts;
 
 import java.math.BigDecimal;
 
 import org.junit.Test;
+
+import accountancy.accounts.Account;
+import accountancy.accounts.AccountLimitException;
 import static org.junit.Assert.*;
 
 public class AccountTest {
@@ -10,29 +13,7 @@ public class AccountTest {
 	@Test
 	public void accountCreationTest() {
 		Account account = new Account();
-		assertEquals(BigDecimal.ZERO, account.getValue());
-		assertEquals(Account.DEFAULT_NAME, account.getName());
 		assertEquals(Account.NO_LIMIT, account.getLimit());
-	}
-
-	@Test
-	public void valueTest() {
-		Account account = new Account();
-		for (String testString : new String[] { "1000", "0", "-150.32",
-				"5598861335781995486.45" }) {
-			BigDecimal testValue = new BigDecimal(testString);
-			account.setValue(testValue);
-			assertEquals(testValue, account.getValue());
-			assertEquals(testString, account.getValue().toString());
-		}
-	}
-
-	@Test
-	public void nameTest() {
-		Account account = new Account();
-		String testName = "test";
-		account.setName(testName);
-		assertEquals(testName, account.getName());
 	}
 
 	@Test
@@ -59,5 +40,8 @@ public class AccountTest {
 			assertTrue(ex.getMessage().contains(testLimit.toString()));
 			assertTrue(ex.getMessage().contains(testValueNotApplied.toString()));
 		}
+		
+		account.setForcedValue(testValueNotApplied);
+		assertEquals(testValueNotApplied, account.getValue());
 	}
 }
