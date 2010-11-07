@@ -2,7 +2,7 @@ package manager;
 
 import org.junit.Test;
 
-
+import accountancy.AccountancyElement;
 import accountancy.accounts.Account;
 import accountancy.budgets.Budget;
 import static org.junit.Assert.*;
@@ -10,22 +10,16 @@ import static org.junit.Assert.*;
 public class ManagerTest {
 
 	@Test
-	public void managerCreationTest() {
-		Manager manager = new Manager();
-		assertEquals(0, manager.getAccounts().size());
-		assertEquals(0, manager.getBudgets().size());
-	}
-
-	@Test
 	public void accountsManagingTest() {
 		Manager manager = new Manager();
+		assertEquals(0, manager.getAccounts().size());
 
 		Account a1 = new Account();
-		a1.setName("a1");
+		a1.setName("1");
 		Account a2 = new Account();
-		a2.setName("a2");
+		a2.setName("2");
 		Account a3 = new Account();
-		a3.setName("a3");
+		a3.setName("3");
 		manager.addAccount(a2);
 		manager.addAccount(a3);
 		manager.addAccount(a1);
@@ -37,28 +31,81 @@ public class ManagerTest {
 			fail("no exception thrown");
 		} catch (AlreadyExistingAccountException ex) {
 		}
+
+		assertEquals(a1, manager.getAccount("1"));
+		assertEquals(a2, manager.getAccount("2"));
+		assertEquals(a3, manager.getAccount("3"));
+		assertNull(manager.getAccount("4"));
 	}
 
 	@Test
 	public void budgetsManagingTest() {
 		Manager manager = new Manager();
+		assertEquals(0, manager.getBudgets().size());
 
-		Budget a1 = new Budget();
-		a1.setName("a1");
-		Budget a2 = new Budget();
-		a2.setName("a2");
-		Budget a3 = new Budget();
-		a3.setName("a3");
-		manager.addBudget(a2);
-		manager.addBudget(a3);
-		manager.addBudget(a1);
-		assertArrayEquals(new Object[] { a1, a2, a3 }, manager.getBudgets()
+		Budget b1 = new Budget();
+		b1.setName("1");
+		Budget b2 = new Budget();
+		b2.setName("2");
+		Budget b3 = new Budget();
+		b3.setName("3");
+		manager.addBudget(b2);
+		manager.addBudget(b3);
+		manager.addBudget(b1);
+		assertArrayEquals(new Object[] { b1, b2, b3 }, manager.getBudgets()
 				.toArray());
 
 		try {
-			manager.addBudget(a1);
+			manager.addBudget(b1);
 			fail("no exception thrown");
 		} catch (AlreadyExistingBudgetException ex) {
+		}
+
+		assertEquals(b1, manager.getBudget("1"));
+		assertEquals(b2, manager.getBudget("2"));
+		assertEquals(b3, manager.getBudget("3"));
+		assertNull(manager.getBudget("4"));
+	}
+
+	@Test
+	public void linkingTest() {
+		Manager manager = new Manager3by2();
+		Account a1 = manager.getAccount("1");
+		Account a2 = manager.getAccount("2");
+		Account a3 = manager.getAccount("3");
+		Budget b1 = manager.getBudget("1");
+		Budget b2 = manager.getBudget("2");
+		
+		manager.links(a1, b1);
+	}
+
+	/**
+	 * A manager with 3 accounts (named 1 to 3) and 2 budgets (named 1 and 2).
+	 * 
+	 * @author Matthieu Vergne <matthieu.vergne@gmail.com>
+	 * 
+	 */
+	class Manager3by2 extends Manager {
+		public Manager3by2() {
+			Account a = new Account();
+			a.setName("1");
+			addAccount(a);
+
+			a = new Account();
+			a.setName("2");
+			addAccount(a);
+
+			a = new Account();
+			a.setName("3");
+			addAccount(a);
+
+			Budget b = new Budget();
+			b.setName("1");
+			addBudget(b);
+
+			b = new Budget();
+			b.setName("1");
+			addBudget(b);
 		}
 	}
 }

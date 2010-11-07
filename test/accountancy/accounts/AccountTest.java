@@ -11,14 +11,16 @@ import static org.junit.Assert.*;
 public class AccountTest {
 
 	@Test
-	public void accountCreationTest() {
-		Account account = new Account();
-		assertEquals(Account.NO_LIMIT, account.getLimit());
-	}
-
-	@Test
 	public void limitTest() {
 		Account account = new Account();
+		assertEquals(Account.INFINITE_LIMIT, account.getLimit());
+		
+		try {
+			account.setLimit(null);
+			fail("no exception thrown");
+		} catch (NullPointerException ex) {
+		}
+		
 		BigDecimal testLimit = new BigDecimal("1000");
 		account.setLimit(testLimit);
 		assertEquals(testLimit, account.getLimit());
