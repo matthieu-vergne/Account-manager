@@ -1,10 +1,9 @@
 package manager;
 
-import org.junit.Test;
-
 import accountancy.AccountancyElement;
 import accountancy.accounts.Account;
 import accountancy.budgets.Budget;
+import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class ManagerTest {
@@ -75,8 +74,6 @@ public class ManagerTest {
 		Account a3 = manager.getAccount("3");
 		Budget b1 = manager.getBudget("1");
 		Budget b2 = manager.getBudget("2");
-		
-		manager.links(a1, b1);
 	}
 
 	/**
@@ -104,7 +101,7 @@ public class ManagerTest {
 			addBudget(b);
 
 			b = new Budget();
-			b.setName("1");
+			b.setName("2");
 			addBudget(b);
 		}
 	}
