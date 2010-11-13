@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 /**
  * This is the parent class of accounts and budgets. It implements the common
- * elements, like name and value, with the associated methods.
+ * fields, like name and value, with the associated methods.
  * 
  * @author Matthieu Vergne <matthieu.vergne@gmail.com>
  * 

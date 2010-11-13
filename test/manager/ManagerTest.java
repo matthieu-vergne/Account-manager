@@ -15,6 +15,8 @@ import org.junit.Test;
 
 import accountancy.accounts.Account;
 import accountancy.budgets.Budget;
+import accountancy.movements.Movement;
+import accountancy.movements.Movement.Sense;
 
 public class ManagerTest {
 
@@ -112,14 +114,14 @@ public class ManagerTest {
 			fail("no exception thrown");
 		} catch (NoLinkException ex) {
 		}
-		
+
 		BigDecimal linkValue = new BigDecimal("200");
 		try {
 			manager.changeLinkValue(a1, b1, linkValue);
 			fail("no exception thrown");
 		} catch (NoLinkException ex) {
 		}
-		
+
 		manager.links(a1, b1);
 		assertTrue(manager.isLinked(a1, b1));
 		assertNull(manager.getLinkValue(a1, b1));
@@ -137,11 +139,62 @@ public class ManagerTest {
 		manager.links(a2, b1);
 		manager.links(a2, b2);
 		manager.links(a3, b2);
-		assertArrayEquals(new String[]{a1, a2}, manager.getAccountsLinkedToBudget(b1));
-		assertArrayEquals(new String[]{a2, a3}, manager.getAccountsLinkedToBudget(b2));
-		assertArrayEquals(new String[]{b1}, manager.getBudgetsLinkedToAccount(a1));
-		assertArrayEquals(new String[]{b1, b2}, manager.getBudgetsLinkedToAccount(a2));
-		assertArrayEquals(new String[]{b2}, manager.getBudgetsLinkedToAccount(a3));
+		assertArrayEquals(new String[] { a1, a2 },
+				manager.getAccountsLinkedToBudget(b1));
+		assertArrayEquals(new String[] { a2, a3 },
+				manager.getAccountsLinkedToBudget(b2));
+		assertArrayEquals(new String[] { b1 },
+				manager.getBudgetsLinkedToAccount(a1));
+		assertArrayEquals(new String[] { b1, b2 },
+				manager.getBudgetsLinkedToAccount(a2));
+		assertArrayEquals(new String[] { b2 },
+				manager.getBudgetsLinkedToAccount(a3));
+	}
+
+	@Test
+	public void movementsTest() {
+		Manager manager = new Manager3by2();
+		Account a1 = manager.getAccount("1");
+		Account a2 = manager.getAccount("2");
+		Account a3 = manager.getAccount("3");
+		Budget b1 = manager.getBudget("1");
+		Budget b2 = manager.getBudget("2");
+
+		BigDecimal valueA1 = new BigDecimal("100");
+		BigDecimal valueA2 = new BigDecimal("100");
+		BigDecimal valueA3 = new BigDecimal("100");
+		BigDecimal valueB1 = new BigDecimal("150");
+		BigDecimal valueB2 = new BigDecimal("150");
+
+		manager.links(a1.getName(), b1.getName());
+		manager.links(a2.getName(), b1.getName());
+		manager.links(a2.getName(), b2.getName());
+		manager.links(a3.getName(), b2.getName());
+
+		// TODO /!\ apply these tests
+		// Movement movement = new Movement();
+		// BigDecimal id = manager.addMovement(movement);
+		// try {
+		// manager.applyMovement(id);
+		// fail("no exception thrown");
+		// } catch (InvalidMovementException e) {
+		// }
+		//
+		// movement.setAccount(a1);
+		// BigDecimal valueMovement = new BigDecimal("100");
+		// movement.setValue(valueMovement);
+		// movement.setSense(Sense.INPUT);
+		// manager.applyMovement(id);
+		// assertEquals(valueA1.add(valueMovement), a1.getValue());
+		// assertEquals(valueA2, a2.getValue());
+		// assertEquals(valueA3, a3.getValue());
+		// assertEquals(valueB1, b1.getValue());
+		// assertEquals(valueB2, b2.getValue());
+		// try {
+		// manager.applyMovement(id);
+		// fail("no exception thrown");
+		// } catch (LockedMovementException e) {
+		// }
 	}
 
 	/**

@@ -293,8 +293,9 @@ public class Manager {
 	public void changeLinkValue(String accountName, String budgetName,
 			BigDecimal newValue) {
 		Link link = getLink(accountName, budgetName);
-		// TODO check if there is a need to control value sign : basically a
-		// negative value should be forbidden
+		// TODO check if there is a need to control value sign
+		// basically a negative value should be forbidden, as a negative value
+		// means the budget feed the account, what is a non-sense
 		link.value = newValue;
 	}
 
