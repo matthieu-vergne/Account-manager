@@ -18,7 +18,7 @@ import accountancy.budgets.Budget;
  * @author Matthieu Vergne <matthieu.vergne@gmail.com>
  * 
  */
-public class Movement {
+public class Movement implements Cloneable {
 
 	/**
 	 * The complete value of the movement. Values assigned to budgets are
@@ -58,9 +58,9 @@ public class Movement {
 	};
 
 	/**
-	 * The sense of the movement.
+	 * The sense of the movement. By default it is an input.
 	 */
-	private Sense sense;
+	private Sense sense = Sense.INPUT;
 
 	public BigDecimal getValue() {
 		return value;
@@ -164,6 +164,9 @@ public class Movement {
 	}
 
 	public void setSense(Sense sense) {
+        if (sense == null) {
+            throw new NullPointerException("the sense cannot be null");
+        }
 		checkLock();
 		this.sense = sense;
 	}
@@ -180,4 +183,14 @@ public class Movement {
 		return locked;
 	}
 
+	@Override
+	public Movement clone() {
+	    Movement clone = new Movement();
+	    clone.setAccount(getAccount());
+	    clone.setValue(getValue());
+	    for (Budget budget : assignments.keySet()) {
+            clone.assignValueToBudget(budget, assignments.get(budget));
+        }
+	    return clone;
+	}
 }

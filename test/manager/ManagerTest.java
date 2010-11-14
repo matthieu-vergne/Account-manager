@@ -160,41 +160,72 @@ public class ManagerTest {
 		Budget b1 = manager.getBudget("1");
 		Budget b2 = manager.getBudget("2");
 
-		BigDecimal valueA1 = new BigDecimal("100");
-		BigDecimal valueA2 = new BigDecimal("100");
-		BigDecimal valueA3 = new BigDecimal("100");
-		BigDecimal valueB1 = new BigDecimal("150");
-		BigDecimal valueB2 = new BigDecimal("150");
-
 		manager.links(a1.getName(), b1.getName());
 		manager.links(a2.getName(), b1.getName());
 		manager.links(a2.getName(), b2.getName());
 		manager.links(a3.getName(), b2.getName());
+		
+        BigDecimal valueA1 = new BigDecimal("100");
+        BigDecimal valueA2 = new BigDecimal("100");
+        BigDecimal valueA3 = new BigDecimal("100");
+        BigDecimal valueB1 = new BigDecimal("150");
+        BigDecimal valueB2 = new BigDecimal("150");
+        
+        a1.setValue(valueA1);
+        a2.setValue(valueA2);
+        a3.setValue(valueA3);
+        b1.setValue(valueB1);
+        b2.setValue(valueB2);
 
-		// TODO /!\ apply these tests
-		// Movement movement = new Movement();
-		// BigDecimal id = manager.addMovement(movement);
-		// try {
-		// manager.applyMovement(id);
-		// fail("no exception thrown");
-		// } catch (InvalidMovementException e) {
-		// }
-		//
-		// movement.setAccount(a1);
-		// BigDecimal valueMovement = new BigDecimal("100");
-		// movement.setValue(valueMovement);
-		// movement.setSense(Sense.INPUT);
-		// manager.applyMovement(id);
-		// assertEquals(valueA1.add(valueMovement), a1.getValue());
-		// assertEquals(valueA2, a2.getValue());
-		// assertEquals(valueA3, a3.getValue());
-		// assertEquals(valueB1, b1.getValue());
-		// assertEquals(valueB2, b2.getValue());
-		// try {
-		// manager.applyMovement(id);
-		// fail("no exception thrown");
-		// } catch (LockedMovementException e) {
-		// }
+        try {
+            manager.getMovement(new BigDecimal("100"));
+            fail("no exception thrown");
+        } catch (UnknownMovementException e) {
+        }
+
+		Movement movement = new Movement();
+		BigDecimal id = manager.addMovement(movement);
+		assertEquals(movement, manager.getMovement(id));
+
+        try {
+            manager.applyMovement(id);
+            fail("no exception thrown");
+        } catch (InvalidMovementException e) {
+        }
+
+		movement.setAccount(a1);
+		BigDecimal valueMovement = new BigDecimal("100");
+		movement.setValue(valueMovement);
+		movement.setSense(Sense.INPUT);
+		assertFalse(manager.isApplied(id));
+		manager.applyMovement(id);
+        assertTrue(manager.isApplied(id));
+		assertEquals(valueA1.add(valueMovement), a1.getValue());
+		assertEquals(valueA2, a2.getValue());
+		assertEquals(valueA3, a3.getValue());
+		assertEquals(valueB1, b1.getValue());
+		assertEquals(valueB2, b2.getValue());
+		
+		try {
+			manager.applyMovement(id);
+			fail("no exception thrown");
+		} catch (AlreadyAppliedMovementException e) {
+		}
+		
+        assertTrue(manager.isApplied(id));
+        manager.cancelMovement(id);
+        assertFalse(manager.isApplied(id));
+        assertEquals(valueA1, a1.getValue());
+        assertEquals(valueA2, a2.getValue());
+        assertEquals(valueA3, a3.getValue());
+        assertEquals(valueB1, b1.getValue());
+        assertEquals(valueB2, b2.getValue());
+        
+        try {
+            manager.cancelMovement(id);
+            fail("no exception thrown");
+        } catch (NotAppliedMovementException e) {
+        }
 	}
 
 	/**
