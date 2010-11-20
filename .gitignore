@@ -3,6 +3,7 @@
 /.project
 /.settings
 /.classpath
+/build
 /build.xml
 /manifest.mf
 /nbproject
