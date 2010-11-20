@@ -1,5 +1,6 @@
 package accountancy;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
@@ -9,48 +10,57 @@ import java.math.BigDecimal;
  * @author Matthieu Vergne <matthieu.vergne@gmail.com>
  * 
  */
-public class AccountancyElement {
-	/**
-	 * The name applied at the creation of the element.
-	 */
-	public static final String DEFAULT_NAME = "<unnamed>";
-	/**
-	 * The name of the element. At the creation of the element, it is
-	 * initialized with {@link AccountancyElement#DEFAULT_NAME}.
-	 */
-	private String name = DEFAULT_NAME;
-	/**
-	 * The value (amount of money) of the element. At the creation of the
-	 * element, it is initialized to zero ({@link BigDecimal#ZERO} ).
-	 */
-	private BigDecimal value = BigDecimal.ZERO;
+public class AccountancyElement implements Comparable<AccountancyElement>, Serializable {
 
-	public BigDecimal getValue() {
-		return value;
-	}
+    /**
+     * The name applied at the creation of the element.
+     */
+    public static final String DEFAULT_NAME = "<unnamed>";
+    /**
+     * The name of the element. At the creation of the element, it is
+     * initialized with {@link AccountancyElement#DEFAULT_NAME}.
+     */
+    private String name = DEFAULT_NAME;
+    /**
+     * The value (amount of money) of the element. At the creation of the
+     * element, it is initialized to zero ({@link BigDecimal#ZERO} ).
+     */
+    private BigDecimal value = BigDecimal.ZERO;
 
-	public String getName() {
-		return name;
-	}
+    public BigDecimal getValue() {
+        return value;
+    }
 
-	/**
-	 * @exception NullPointerException if the argument is null
-	 */
-	public void setValue(BigDecimal newValue) {
-		if (newValue == null) {
-			throw new NullPointerException();
-		}
-		value = newValue;
-	}
+    public String getName() {
+        return name;
+    }
 
-	/**
-	 * @exception NullPointerException if the argument is null
-	 */
-	public void setName(String newName) {
-		if (newName == null) {
-			throw new NullPointerException();
-		}
-		name = newName;
-	}
+    /**
+     * @exception NullPointerException if the argument is null
+     */
+    public void setValue(BigDecimal newValue) {
+        if (newValue == null) {
+            throw new NullPointerException();
+        }
+        value = newValue;
+    }
 
+    /**
+     * @exception NullPointerException if the argument is null
+     */
+    public void setName(String newName) {
+        if (newName == null) {
+            throw new NullPointerException();
+        }
+        name = newName;
+    }
+
+    /**
+     * 
+     * @param e the element to compare to
+     * @return a simple name comparison
+     */
+    public int compareTo(AccountancyElement e) {
+        return getName().compareTo(e.getName());
+    }
 }

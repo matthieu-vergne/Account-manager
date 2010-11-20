@@ -34,7 +34,8 @@ public class ManagerTest {
         manager.addAccount(a2);
         manager.addAccount(a3);
         manager.addAccount(a1);
-        assertArrayEquals(new Object[]{a1, a2, a3}, manager.getAccounts().toArray());
+        assertArrayEquals(new Object[]{a1, a2, a3}, manager.getAccounts().
+                toArray());
 
         try {
             manager.addAccount(a1);
@@ -62,7 +63,8 @@ public class ManagerTest {
         manager.addBudget(b2);
         manager.addBudget(b3);
         manager.addBudget(b1);
-        assertArrayEquals(new Object[]{b1, b2, b3}, manager.getBudgets().toArray());
+        assertArrayEquals(new Object[]{b1, b2, b3},
+                manager.getBudgets().toArray());
 
         try {
             manager.addBudget(b1);
@@ -233,35 +235,59 @@ public class ManagerTest {
         } catch (UnknownMovementException e) {
         }
 
-        BigDecimal[] movementsIds = new BigDecimal[] {
+        BigDecimal[] movementsIds = new BigDecimal[]{
             manager.addMovement(new Movement()),
             manager.addMovement(new Movement()),
             manager.addMovement(new Movement()),
             manager.addMovement(new Movement()),
-            manager.addMovement(new Movement()),
-        };
+            manager.addMovement(new Movement()),};
         assertArrayEquals(movementsIds, manager.getMovementsIDs());
     }
 
     @Test
     public void savingTest() {
         Manager manager = new Manager3by2();
-        String path = "";
+        String path = "test.xml";
         manager.save(path);
         Manager manager2 = Manager.getSaved(path);
-        assertArrayEquals(manager.getAccounts().toArray(), manager2.getAccounts().toArray());
-        assertArrayEquals(manager.getBudgets().toArray(), manager2.getBudgets().toArray());
+
+        assertArrayEquals(manager.getAccounts().toArray(), manager2.getAccounts().
+                toArray());
+        assertArrayEquals(manager.getBudgets().toArray(), manager2.getBudgets().
+                toArray());
+        assertArrayEquals(manager.getMovementsIDs(), manager2.getMovementsIDs());
+
         for (Account account : manager.getAccounts()) {
-            final String[] list1 = manager.getBudgetsLinkedToAccount(account.getName());
-            final String[] list2 = manager2.getBudgetsLinkedToAccount(account.getName());
+            final String[] list1 = manager.getBudgetsLinkedToAccount(account.
+                    getName());
+            final String[] list2 = manager2.getBudgetsLinkedToAccount(account.
+                    getName());
             assertArrayEquals(list1, list2);
         }
+
         for (Budget budget : manager.getBudgets()) {
-            final String[] list1 = manager.getAccountsLinkedToBudget(budget.getName());
-            final String[] list2 = manager2.getAccountsLinkedToBudget(budget.getName());
+            final String[] list1 = manager.getAccountsLinkedToBudget(budget.
+                    getName());
+            final String[] list2 = manager2.getAccountsLinkedToBudget(budget.
+                    getName());
             assertArrayEquals(list1, list2);
         }
-        //TODO add a method to get all the movements
+
+        for (Account account : manager.getAccounts()) {
+            for (Budget budget : manager.getBudgets()) {
+                final BigDecimal value1 = manager.getLinkValue(account.getName(), budget.
+                        getName());
+                final BigDecimal value2 = manager2.getLinkValue(
+                        account.getName(), budget.getName());
+                assertEquals(value1, value2);
+            }
+        }
+
+        for (BigDecimal id : manager.getMovementsIDs()) {
+            final Movement movement1 = manager.getMovement(id);
+            final Movement movement2 = manager2.getMovement(id);
+            assertEquals(movement1, movement2);
+        }
     }
 
     /**

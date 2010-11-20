@@ -59,7 +59,7 @@ public class MovementTest {
     @Test
     public void senseTest() {
         Movement movement = new Movement();
-        assertNull(movement.getSense());
+        assertEquals(movement.getSense(), Sense.INPUT);
         
         movement.setSense(Sense.OUTPUT);
         assertEquals(Sense.OUTPUT, movement.getSense());

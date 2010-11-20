@@ -8,6 +8,8 @@ import java.util.Map;
 
 import accountancy.accounts.Account;
 import accountancy.budgets.Budget;
+import java.io.Serializable;
+import java.util.TreeMap;
 
 /**
  * A movement represent a transfer of money assigned to an account and,
@@ -18,7 +20,7 @@ import accountancy.budgets.Budget;
  * @author Matthieu Vergne <matthieu.vergne@gmail.com>
  * 
  */
-public class Movement implements Cloneable {
+public class Movement implements Cloneable, Serializable {
 
 	/**
 	 * The complete value of the movement. Values assigned to budgets are
@@ -32,7 +34,7 @@ public class Movement implements Cloneable {
 	/**
 	 * The list of budgets to apply the movement on.
 	 */
-	private final Map<Budget, BigDecimal> assignments = new HashMap<Budget, BigDecimal>();
+	private final Map<Budget, BigDecimal> assignments = new TreeMap<Budget, BigDecimal>();
 
 	/**
 	 * Tell if this movement is locked. A locked movement implies no possible
@@ -118,16 +120,7 @@ public class Movement implements Cloneable {
 	 * @return the list of the budgets assigned in this movement
 	 */
 	public Budget[] getBudgetsAssigned() {
-		Budget[] array = assignments.keySet().toArray(new Budget[] {});
-		Arrays.sort(array, new Comparator<Budget>() {
-
-			@Override
-			public int compare(Budget b1, Budget b2) {
-				return b1.getName().compareTo(b2.getName());
-			}
-
-		});
-		return array;
+		return assignments.keySet().toArray(new Budget[] {});
 	}
 
 	/**
@@ -186,6 +179,7 @@ public class Movement implements Cloneable {
 	@Override
 	public Movement clone() {
 	    Movement clone = new Movement();
+	    clone.setSense(getSense());
 	    clone.setAccount(getAccount());
 	    clone.setValue(getValue());
 	    for (Budget budget : assignments.keySet()) {

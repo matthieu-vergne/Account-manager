@@ -13,6 +13,7 @@ import accountancy.AccountancyElement;
  */
 public class Account extends AccountancyElement {
 
+
 	/**
 	 * A high limit to simulate an infinite limit.<br/>
 	 * <br/>

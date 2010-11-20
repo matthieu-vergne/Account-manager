@@ -1,10 +1,13 @@
 package manager;
 
+import java.beans.Encoder;
+import java.beans.Expression;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -16,6 +19,15 @@ import accountancy.accounts.Account;
 import accountancy.budgets.Budget;
 import accountancy.movements.Movement;
 import accountancy.movements.Movement.Sense;
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.Serializable;
+import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A manager is a container for accounts and budgets. It offers several methods
@@ -24,13 +36,14 @@ import accountancy.movements.Movement.Sense;
  * @author Matthieu Vergne <matthieu.vergne@gmail.com>
  * 
  */
-public class Manager {
-    
+public class Manager implements Serializable {
+
     /**
      * The list of accounts, sorted by name.
      */
     private final Set<Account> accounts = new TreeSet<Account>(
             new Comparator<Account>() {
+
                 @Override
                 public int compare(Account a1, Account a2) {
                     return a1.getName().compareTo(a2.getName());
@@ -41,6 +54,7 @@ public class Manager {
      */
     private final Set<Budget> budgets = new TreeSet<Budget>(
             new Comparator<Budget>() {
+
                 @Override
                 public int compare(Budget b1, Budget b2) {
                     return b1.getName().compareTo(b2.getName());
@@ -50,16 +64,16 @@ public class Manager {
      * The list of the different movements of this manager.
      */
     private final Map<BigDecimal, Movement> movements =
-            new HashMap<BigDecimal, Movement>();
-    
+                                            new TreeMap<BigDecimal, Movement>();
+
     public Set<Account> getAccounts() {
         return accounts;
     }
-    
+
     public Set<Budget> getBudgets() {
         return budgets;
     }
-    
+
     /**
      * @exception AlreadyExistingAccountException
      *                if the given account has the same name than another
@@ -70,7 +84,7 @@ public class Manager {
             throw new AlreadyExistingAccountException();
         }
     }
-    
+
     /**
      * @exception AlreadyExistingBudgetException
      *                if the given budget has the same name than another already
@@ -81,7 +95,7 @@ public class Manager {
             throw new AlreadyExistingBudgetException();
         }
     }
-    
+
     /**
      * @return The account which has the given name (in this manager), null
      *         otherwise
@@ -89,7 +103,7 @@ public class Manager {
     public Account getAccount(String accountName) {
         return getElement(accounts, accountName);
     }
-    
+
     /**
      * @return The budget which has the given name (in this manager), null
      *         otherwise
@@ -97,17 +111,17 @@ public class Manager {
     public Budget getBudget(String budgetName) {
         return getElement(budgets, budgetName);
     }
-    
+
     /**
      * @return The element of the given list which has the given name, null
      *         otherwise
      */
     private <T extends AccountancyElement> T getElement(Set<T> list,
-            String elementName) {
+                                                        String elementName) {
         if (list == null) {
             throw new NullPointerException("the list cannot be null");
         }
-        
+
         for (Iterator<T> iterator = list.iterator(); iterator.hasNext();) {
             T element = iterator.next();
             if (element.getName().equals(elementName)) {
@@ -116,7 +130,6 @@ public class Manager {
         }
         return null;
     }
-    
     /**
      * The list of links between accounts and budgets. It is a set because it is
      * too complex to manage several links on the same account and budget and no
@@ -128,7 +141,7 @@ public class Manager {
      * The last ID generated in this manager.
      */
     private BigDecimal lastGeneratedId = BigDecimal.ZERO;
-    
+
     /**
      * Link an account and a budget which are not yet linked.
      * 
@@ -146,7 +159,43 @@ public class Manager {
         }
         links.add(link);
     }
-    
+
+    /**
+     * Remove the movement of the given ID.
+     * @param id the ID of the movement
+     */
+    public void removeMovement(BigDecimal id) {
+        Movement movement = movements.remove(id);
+        if (movement == null) {
+            throw new UnknownMovementException(id);
+        }
+    }
+
+    /**
+     *
+     * @return the list of the IDs known by the manager
+     */
+    public BigDecimal[] getMovementsIDs() {
+        return movements.keySet().toArray(new BigDecimal[]{});
+    }
+
+    /**
+     * Save the content of this manager to the given file.
+     * @param filePath the file path where the manager must be saved
+     */
+    public void save(String filePath) {
+        throw new RuntimeException("not yet implemented");
+    }
+
+    /**
+     * Recover the content of a manager from the given file.
+     * @param filePath the file path where the manager is saved
+     * @return the manager recovered, null if there is an error
+     */
+    public static Manager getSaved(String filePath) {
+        throw new RuntimeException("not yet implemented");
+    }
+
     /**
      * A link allows an account to food a budget. If there is no value (null)
      * the budget can take what it needs (depending of its links with other
@@ -157,6 +206,7 @@ public class Manager {
      * 
      */
     class Link {
+
         /**
          * The account which give the money to the budget.
          */
@@ -171,13 +221,13 @@ public class Manager {
          * the amount of money of the account reserved to the budget.
          */
         BigDecimal value;
-        
+
         public Link(Account account, Budget budget) {
             this.account = account;
             this.budget = budget;
             this.value = null;
         }
-        
+
         /**
          * 
          * @param element
@@ -188,7 +238,7 @@ public class Manager {
             return (element instanceof Account) ? account.equals(element)
                     : budget.equals(element);
         }
-        
+
         /**
          * Two links are equal if they have the same account and budget couple.
          * There is no value check, two links with different values are the same
@@ -203,7 +253,7 @@ public class Manager {
             throw new IllegalArgumentException("the argument is not a "
                                                + getClass());
         }
-        
+
         /**
          * Give a hashcode depending of account and budget, so a set of links
          * can recognize two equal links by their hashcode. This is especially
@@ -214,7 +264,7 @@ public class Manager {
             return account.hashCode() + budget.hashCode();
         }
     }
-    
+
     /**
      * Tell if the account and the budgets are linked
      * 
@@ -227,7 +277,7 @@ public class Manager {
     public boolean isLinked(String accountName, String budgetName) {
         return links.contains(generateLink(accountName, budgetName));
     }
-    
+
     /**
      * Give the value of the link between the given account and budget.
      * 
@@ -242,7 +292,7 @@ public class Manager {
         Link link = getLink(accountName, budgetName);
         return link.value;
     }
-    
+
     /**
      * Give the existing link which correspond to the given account and budget.
      * 
@@ -263,7 +313,7 @@ public class Manager {
         }
         throw new NoLinkException(accountName, budgetName);
     }
-    
+
     /**
      * Generate a link, without insert it in the manager. This method manage all
      * the checking needed to create a new link.
@@ -283,15 +333,15 @@ public class Manager {
         if (account == null) {
             throw new UnknownAccountException(accountName);
         }
-        
+
         Budget budget = getBudget(budgetName);
         if (budget == null) {
             throw new UnknownBudgetException(budgetName);
         }
-        
+
         return new Link(account, budget);
     }
-    
+
     /**
      * Give a new value to the link between the given account and budget.
      * 
@@ -303,14 +353,14 @@ public class Manager {
      *            the value to apply to the link
      */
     public void changeLinkValue(String accountName, String budgetName,
-            BigDecimal newValue) {
+                                BigDecimal newValue) {
         Link link = getLink(accountName, budgetName);
         // TODO check if there is a need to control value sign
         // basically a negative value should be forbidden, as a negative value
         // means the budget feed the account, what is a non-sense
         link.value = newValue;
     }
-    
+
     /**
      * 
      * @param budgetName
@@ -320,7 +370,7 @@ public class Manager {
     public String[] getAccountsLinkedToBudget(String budgetName) {
         return getElementsLinkedToElement(getBudget(budgetName));
     }
-    
+
     /**
      * 
      * @param accountName
@@ -330,7 +380,7 @@ public class Manager {
     public String[] getBudgetsLinkedToAccount(String accountName) {
         return getElementsLinkedToElement(getAccount(accountName));
     }
-    
+
     /**
      * Give the names of the elements (accounts or budgets) linked to the given
      * element (respectively budget or account).
@@ -349,11 +399,11 @@ public class Manager {
                 linkedNames.add(linkedElement.getName());
             }
         }
-        String[] array = linkedNames.toArray(new String[] {});
+        String[] array = linkedNames.toArray(new String[]{});
         Arrays.sort(array);
         return array;
     }
-    
+
     /**
      * Add a new movement to this manager. The movement is just added to the
      * manager, it means the manager knows it, but nothing about checking or
@@ -368,7 +418,7 @@ public class Manager {
         movements.put(id, movement);
         return id;
     }
-    
+
     /**
      * Generate an ID not used in this manager. It allows to have a unique ID in
      * all the manager.<br/>
@@ -383,7 +433,7 @@ public class Manager {
         lastGeneratedId = lastGeneratedId.add(BigDecimal.ONE);
         return lastGeneratedId;
     }
-    
+
     /**
      * Apply a movement that the manager knows. When a movement is applied, the
      * accounts and the budgets concerned by this movement are affected.
@@ -403,17 +453,16 @@ public class Manager {
         }
         if (movement.getAccount() == null || movement.getValue() == null) {
             throw new InvalidMovementException();
-        }
-        else {
+        } else {
             movement.setLocked(true);
-            
+
             Account account = movement.getAccount();
             BigDecimal valueToAdd = movement.getValue();
             if (movement.getSense() == Sense.OUTPUT) {
                 valueToAdd = valueToAdd.negate();
             }
             account.setValue(account.getValue().add(valueToAdd));
-            
+
             for (Budget budget : movement.getBudgetsAssigned()) {
                 valueToAdd = movement.getValueForBudget(budget);
                 if (movement.getSense() == Sense.OUTPUT) {
@@ -423,7 +472,7 @@ public class Manager {
             }
         }
     }
-    
+
     /**
      * 
      * @param id
@@ -435,11 +484,11 @@ public class Manager {
     public Movement getMovement(BigDecimal id) {
         Movement movement = movements.get(id);
         if (movement == null) {
-            throw new UnknownMovementException();
+            throw new UnknownMovementException(id);
         }
         return movement;
     }
-    
+
     /**
      * Cancel the applying of a movement. The result of a canceling is the same
      * as if you have never applied it : the manager knows it but the accounts
@@ -454,23 +503,22 @@ public class Manager {
         Movement movement = getMovement(id);
         if (!movement.isLocked()) {
             throw new NotAppliedMovementException();
-        }
-        else {
+        } else {
             // we unlock the original movement, with that we must ensure its
             // effects are canceled too
             movement.setLocked(false);
-            
+
             // we create the same movement but in the other sense
             Movement antiMovement = movement.clone();
             antiMovement.setSense(movement.getSense() == Sense.INPUT
                     ? Sense.OUTPUT : Sense.INPUT);
-            
+
             // we compensate the original movement effects applying the opposite
             // movement, now it is the same as if the original movement was
             // never applied
             id = addMovement(antiMovement);
             applyMovement(id);
-            
+
             // we erase the opposite movement passing all the controls, so there
             // is no trace of it
             movements.remove(id);
