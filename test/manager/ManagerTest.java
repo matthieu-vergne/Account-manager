@@ -289,8 +289,6 @@ public class ManagerTest {
         String path = "persistenceTest.sav";
         manager.save(path);
         Manager manager2 = Manager.getSaved(path);
-        File f = new File(path);
-        f.delete();
 
         assertArrayEquals(manager.getAccountNames(), manager2.getAccountNames());
         assertArrayEquals(manager.getBudgetNames(), manager2.getBudgetNames());
