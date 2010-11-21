@@ -5,6 +5,8 @@ import java.util.Map;
 
 import accountancy.accounts.Account;
 import accountancy.budgets.Budget;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.TreeMap;
 
 /**
@@ -65,6 +67,10 @@ public class Movement implements Cloneable {
     }
 
     public void setValue(BigDecimal value) {
+        if (value == null) {
+            throw new NullPointerException("the value cannot be null");
+        }
+
         checkLock();
         // TODO check if there is a need to control value sign
         // basically a negative value should be forbidden, as a negative value
@@ -116,7 +122,28 @@ public class Movement implements Cloneable {
      * @return the list of the budgets assigned in this movement
      */
     public Budget[] getBudgetsAssigned() {
-        return assignments.keySet().toArray(new Budget[]{});
+        Budget[] budgets = assignments.keySet().toArray(new Budget[0]);
+        Arrays.sort(budgets, new Comparator<Budget>() {
+
+            public int compare(Budget b1, Budget b2) {
+                return b1.getName().compareTo(b2.getName());
+            }
+        });
+        return budgets;
+    }
+
+    /**
+     *
+     * @return the list of the names of the budgets assigned in this movement
+     */
+    public String[] getNamesOfBudgetsAssigned() {
+        String[] budgets = new String[assignments.size()];
+        int count = 0;
+        for (Budget budget : getBudgetsAssigned()) {
+            budgets[count++] = budget.getName();
+        }
+        Arrays.sort(budgets);
+        return budgets;
     }
 
     /**

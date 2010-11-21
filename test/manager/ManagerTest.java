@@ -250,23 +250,27 @@ public class ManagerTest {
         Manager manager = new Manager();
 
         Account a1 = new Account();
-        a1.setName("1");
-        manager.addAccount(a1);
-
         Account a2 = new Account();
-        a2.setName("2");
-        manager.addAccount(a2);
-
         Account a3 = new Account();
-        a3.setName("3");
-        manager.addAccount(a3);
-
         Budget b1 = new Budget();
-        b1.setName("1");
-        manager.addBudget(b1);
-
         Budget b2 = new Budget();
+
+        a1.setName("1");
+        a2.setName("2");
+        a3.setName("3");
+        b1.setName("1");
         b2.setName("2");
+
+        a1.setValue(new BigDecimal("100"));
+        a2.setValue(new BigDecimal("100"));
+        a3.setValue(new BigDecimal("100"));
+        b1.setValue(new BigDecimal("200"));
+        b2.setValue(new BigDecimal("200"));
+
+        manager.addAccount(a1);
+        manager.addAccount(a2);
+        manager.addAccount(a3);
+        manager.addBudget(b1);
         manager.addBudget(b2);
 
         manager.links(a1.getName(), b1.getName());
@@ -274,17 +278,28 @@ public class ManagerTest {
         manager.links(a2.getName(), b2.getName());
         manager.links(a3.getName(), b2.getName());
 
-        BigDecimal valueA1 = new BigDecimal("100");
-        BigDecimal valueA2 = new BigDecimal("100");
-        BigDecimal valueA3 = new BigDecimal("100");
-        BigDecimal valueB1 = new BigDecimal("150");
-        BigDecimal valueB2 = new BigDecimal("150");
+        Movement m1 = new Movement();
+        Movement m2 = new Movement();
+        Movement m3 = new Movement();
 
-        a1.setValue(valueA1);
-        a2.setValue(valueA2);
-        a3.setValue(valueA3);
-        b1.setValue(valueB1);
-        b2.setValue(valueB2);
+        m1.setAccount(a1);
+        m2.setAccount(a2);
+
+        m1.setValue(new BigDecimal("10"));
+        m2.setValue(new BigDecimal("20"));
+
+        m1.setSense(Sense.INPUT);
+        m2.setSense(Sense.OUTPUT);
+
+        m2.assignValueToBudget(b1, new BigDecimal("10"));
+        m2.assignValueToBudget(b2, new BigDecimal("10"));
+
+        BigDecimal idM1 = manager.addMovement(m1);
+        BigDecimal idM2 = manager.addMovement(m2);
+        manager.addMovement(m3);
+
+        manager.applyMovement(idM1);
+        manager.applyMovement(idM2);
 
         String path = "persistenceTest.sav";
         String password = "pass";
@@ -339,8 +354,27 @@ public class ManagerTest {
         for (BigDecimal id : manager.getMovementsIDs()) {
             final Movement movement1 = manager.getMovement(id);
             final Movement movement2 = manager2.getMovement(id);
-            assertEquals(movement1, movement2);
+
+            Account account1 = movement1.getAccount();
+            Account account2 = movement2.getAccount();
+
+            if (account1 == null || account2 == null) {
+                assertNull(account1);
+                assertNull(account2);
+            } else {
+                assertEquals(account1.getName(), account2.getName());
+            }
+            assertEquals(movement1.getSense(), movement2.getSense());
+            assertEquals(movement1.getValue(), movement2.getValue());
+            assertArrayEquals(movement1.getNamesOfBudgetsAssigned(), movement2.
+                    getNamesOfBudgetsAssigned());
+            for (Budget budget : movement1.getBudgetsAssigned()) {
+                assertEquals(movement1.getValueForBudget(budget), movement2.
+                        getValueForBudget(budget));
+            }
         }
+
+
     }
 
     /**

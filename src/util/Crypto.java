@@ -20,14 +20,13 @@ import javax.crypto.SecretKey;
  */
 public class Crypto {
 
-    public enum CipherMode {
+    public enum Mode {
 
-        ENCODE, DECODE
+        ENCRYPT, DECRYPT
     }
-
     public final static String algorithm = "AES";
 
-    public static Cipher getCipher(CipherMode mode, String password) {
+    public static Cipher getCipher(Mode mode, String password) {
         Cipher cipher = null;
         try {
             KeyGenerator kgen = KeyGenerator.getInstance(algorithm);
@@ -35,7 +34,7 @@ public class Crypto {
             kgen.init(random);
             SecretKey key = kgen.generateKey();
             cipher = Cipher.getInstance(algorithm);
-            int cipherMode = mode == CipherMode.ENCODE
+            int cipherMode = mode == Mode.ENCRYPT
                              ? Cipher.ENCRYPT_MODE
                              : Cipher.DECRYPT_MODE;
             cipher.init(cipherMode, key);

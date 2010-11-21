@@ -244,30 +244,18 @@ public class Manager implements Externalizable {
         ObjectOutputStream oos = null;
         try {
             fos = new FileOutputStream(filePath);
-            if (password != null) {
-                cos = new CipherOutputStream(fos, Crypto.getCipher(
-                        Crypto.CipherMode.ENCODE,
-                        password));
-                oos = new ObjectOutputStream(cos);
-            } else {
-                oos = new ObjectOutputStream(fos);
-            }
-            oos.writeObject(this);
-            oos.flush();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(Manager.class.getName()).
-                    log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(Manager.class.getName()).
-                    log(Level.SEVERE, null, ex);
-        } finally {
             try {
+                if (password != null) {
+                    cos = new CipherOutputStream(fos, Crypto.getCipher(
+                            Crypto.Mode.ENCRYPT,
+                            password));
+                    oos = new ObjectOutputStream(cos);
+                } else {
+                    oos = new ObjectOutputStream(fos);
+                }
+                oos.writeObject(this);
+                oos.flush();
                 oos.close();
-            } catch (IOException ex) {
-                Logger.getLogger(Manager.class.getName()).
-                        log(Level.SEVERE, null, ex);
-            }
-            try {
                 if (password != null) {
                     cos.close();
                 }
@@ -281,6 +269,8 @@ public class Manager implements Externalizable {
                 Logger.getLogger(Manager.class.getName()).
                         log(Level.SEVERE, null, ex);
             }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Manager.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -302,7 +292,7 @@ public class Manager implements Externalizable {
             try {
                 if (password != null) {
                     cis = new CipherInputStream(fis, Crypto.getCipher(
-                            Crypto.CipherMode.DECODE, password));
+                            Crypto.Mode.DECRYPT, password));
                     ois = new ObjectInputStream(cis);
                 } else {
                     ois = new ObjectInputStream(fis);
@@ -363,7 +353,10 @@ public class Manager implements Externalizable {
             Movement movement = entry.getValue();
 
             out.writeUTF(id.toString());
-            out.writeUTF(movement.getAccount().getName());
+            Account account = movement.getAccount();
+            out.writeUTF(account == null
+                         ? ""
+                         : account.getName());
             out.writeObject(movement.getSense());
             out.writeUTF(movement.getValue().toString());
             out.writeBoolean(movement.isLocked());
