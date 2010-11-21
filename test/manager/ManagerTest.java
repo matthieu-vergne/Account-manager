@@ -92,11 +92,36 @@ public class ManagerTest {
         Link l3 = manager.new Link(a1, b2);
         Link l4 = manager.new Link(a2, b1);
         Link l5 = manager.new Link(a2, b2);
+
         assertTrue(l1.equals(l1));
         assertTrue(l1.equals(l2));
         assertFalse(l1.equals(l3));
         assertFalse(l1.equals(l4));
         assertFalse(l1.equals(l5));
+
+        assertTrue(l2.equals(l1));
+        assertTrue(l2.equals(l2));
+        assertFalse(l2.equals(l3));
+        assertFalse(l2.equals(l4));
+        assertFalse(l2.equals(l5));
+
+        assertFalse(l3.equals(l1));
+        assertFalse(l3.equals(l2));
+        assertTrue(l3.equals(l3));
+        assertFalse(l3.equals(l4));
+        assertFalse(l3.equals(l5));
+
+        assertFalse(l4.equals(l1));
+        assertFalse(l4.equals(l2));
+        assertFalse(l4.equals(l3));
+        assertTrue(l4.equals(l4));
+        assertFalse(l4.equals(l5));
+
+        assertFalse(l5.equals(l1));
+        assertFalse(l5.equals(l2));
+        assertFalse(l5.equals(l3));
+        assertFalse(l5.equals(l4));
+        assertTrue(l5.equals(l5));
     }
 
     @Test
@@ -116,6 +141,12 @@ public class ManagerTest {
         } catch (NoLinkException ex) {
         }
 
+        try {
+            manager.unlink(a1, b1);
+            fail("no exception thrown");
+        } catch (NoLinkException ex) {
+        }
+
         BigDecimal linkValue = new BigDecimal("200");
         try {
             manager.changeLinkValue(a1, b1, linkValue);
@@ -123,23 +154,29 @@ public class ManagerTest {
         } catch (NoLinkException ex) {
         }
 
-        manager.links(a1, b1);
+        manager.link(a1, b1);
         assertTrue(manager.isLinked(a1, b1));
         assertNull(manager.getLinkValue(a1, b1));
 
         try {
-            manager.links(a1, b1);
+            manager.link(a1, b1);
             fail("no exception thrown");
         } catch (ExistingLinkException ex) {
         }
 
+        manager.unlink(a1, b1);
+        manager.link(a1, b1, linkValue);
+        assertTrue(manager.isLinked(a1, b1));
+        assertEquals(linkValue, manager.getLinkValue(a1, b1));
+
+        linkValue = linkValue.add(BigDecimal.ONE);
         manager.changeLinkValue(a1, b1, linkValue);
         assertTrue(manager.isLinked(a1, b1));
         assertEquals(linkValue, manager.getLinkValue(a1, b1));
 
-        manager.links(a2, b1);
-        manager.links(a2, b2);
-        manager.links(a3, b2);
+        manager.link(a2, b1);
+        manager.link(a2, b2);
+        manager.link(a3, b2);
         assertArrayEquals(new String[]{a1, a2},
                 manager.getAccountsLinkedToBudget(b1));
         assertArrayEquals(new String[]{a2, a3},
@@ -162,10 +199,10 @@ public class ManagerTest {
         Budget b1 = manager.getBudget("1");
         Budget b2 = manager.getBudget("2");
 
-        manager.links(a1.getName(), b1.getName());
-        manager.links(a2.getName(), b1.getName());
-        manager.links(a2.getName(), b2.getName());
-        manager.links(a3.getName(), b2.getName());
+        manager.link(a1.getName(), b1.getName());
+        manager.link(a2.getName(), b1.getName());
+        manager.link(a2.getName(), b2.getName());
+        manager.link(a3.getName(), b2.getName());
 
         BigDecimal valueA1 = new BigDecimal("100");
         BigDecimal valueA2 = new BigDecimal("100");
@@ -247,6 +284,10 @@ public class ManagerTest {
 
     @Test
     public void savingTest() {
+        /*
+         * INITIALISATION
+         */
+
         Manager manager = new Manager();
 
         Account a1 = new Account();
@@ -261,11 +302,11 @@ public class ManagerTest {
         b1.setName("1");
         b2.setName("2");
 
-        a1.setValue(new BigDecimal("100"));
-        a2.setValue(new BigDecimal("100"));
-        a3.setValue(new BigDecimal("100"));
-        b1.setValue(new BigDecimal("200"));
-        b2.setValue(new BigDecimal("200"));
+        a1.setValue(new BigDecimal("200"));
+        a2.setValue(new BigDecimal("200"));
+        a3.setValue(new BigDecimal("200"));
+        b1.setValue(new BigDecimal("100"));
+        b2.setValue(new BigDecimal("100"));
 
         manager.addAccount(a1);
         manager.addAccount(a2);
@@ -273,10 +314,13 @@ public class ManagerTest {
         manager.addBudget(b1);
         manager.addBudget(b2);
 
-        manager.links(a1.getName(), b1.getName());
-        manager.links(a2.getName(), b1.getName());
-        manager.links(a2.getName(), b2.getName());
-        manager.links(a3.getName(), b2.getName());
+        BigDecimal linkValue1 = new BigDecimal("10");
+        BigDecimal linkValue2 = new BigDecimal("10");
+
+        manager.link(a1.getName(), b1.getName());
+        manager.link(a2.getName(), b1.getName(), linkValue1);
+        manager.link(a2.getName(), b2.getName(), linkValue2);
+        manager.link(a3.getName(), b2.getName());
 
         Movement m1 = new Movement();
         Movement m2 = new Movement();
@@ -301,30 +345,22 @@ public class ManagerTest {
         manager.applyMovement(idM1);
         manager.applyMovement(idM2);
 
+        /*
+         * PERSISTENCE
+         */
+
         String path = "persistenceTest.sav";
         String password = "pass";
         manager.save(path, password);
         Manager manager2 = Manager.getSaved(path, password);
 
+        /*
+         * TEST
+         */
+
         assertArrayEquals(manager.getAccountNames(), manager2.getAccountNames());
         assertArrayEquals(manager.getBudgetNames(), manager2.getBudgetNames());
         assertArrayEquals(manager.getMovementsIDs(), manager2.getMovementsIDs());
-
-        for (Account account : manager.getAccounts()) {
-            final String[] list1 = manager.getBudgetsLinkedToAccount(account.
-                    getName());
-            final String[] list2 = manager2.getBudgetsLinkedToAccount(account.
-                    getName());
-            assertArrayEquals(list1, list2);
-        }
-
-        for (Budget budget : manager.getBudgets()) {
-            final String[] list1 = manager.getAccountsLinkedToBudget(budget.
-                    getName());
-            final String[] list2 = manager2.getAccountsLinkedToBudget(budget.
-                    getName());
-            assertArrayEquals(list1, list2);
-        }
 
         for (Account account : manager.getAccounts()) {
             String accountName = account.getName();
@@ -341,9 +377,10 @@ public class ManagerTest {
 
         for (Budget budget : manager.getBudgets()) {
             String budgetName = budget.getName();
-            final String[] list1 = manager.getAccountsLinkedToBudget(budgetName);
-            final String[] list2 =
-                           manager2.getAccountsLinkedToBudget(budgetName);
+            final String[] list1 =
+                           manager.getAccountsLinkedToBudget(budgetName);
+            final String[] list2 = manager2.getAccountsLinkedToBudget(
+                    budgetName);
             assertArrayEquals(list1, list2);
             for (String accountName : list1) {
                 assertEquals(manager.getLinkValue(accountName, budgetName), manager2.
@@ -373,8 +410,6 @@ public class ManagerTest {
                         getValueForBudget(budget));
             }
         }
-
-
     }
 
     /**

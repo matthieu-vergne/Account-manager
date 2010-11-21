@@ -180,21 +180,45 @@ public class Manager implements Externalizable {
     private BigDecimal lastGeneratedId = BigDecimal.ZERO;
 
     /**
+     * Same as {@link #link(java.lang.String, java.lang.String, java.math.BigDecimal) }
+     * with a null value.
+     */
+    public void link(String accountName, String budgetName) {
+        link(accountName, budgetName, null);
+    }
+
+    /**
      * Link an account and a budget which are not yet linked.
      * 
      * @param accountName
      *            the name of the account to link to the budget
      * @param budgetName
      *            the name of the budget to link to the account
+     * @param value the value of the link
      * @exception ExistingLinkException
      *                if the link already exists
      */
-    public void links(String accountName, String budgetName) {
+    public void link(String accountName, String budgetName, BigDecimal value) {
         Link link = generateLink(accountName, budgetName);
         if (links.contains(link)) {
             throw new ExistingLinkException();
         }
+        link.value = value;
         links.add(link);
+    }
+
+    /**
+     * Unlink the given account & budget which are linked.
+     * @param accountName the name of the account to unlink
+     * @param budgetName the name of the budget to unlink
+     * @exception NotLinkedException if the account and budget are not linked
+     */
+    public void unlink(String accountName, String budgetName) {
+        Link link = generateLink(accountName, budgetName);
+        if (!links.contains(link)) {
+            throw new NoLinkException(accountName, budgetName);
+        }
+        links.remove(link);
     }
 
     /**
@@ -341,10 +365,10 @@ public class Manager implements Externalizable {
         for (Link link : links) {
             out.writeUTF(link.account.getName());
             out.writeUTF(link.budget.getName());
-//            BigDecimal val = link.value;
-//            out.writeUTF(val == null
-//                         ? ""
-//                         : val.toString());
+            BigDecimal val = link.value;
+            out.writeUTF(val == null
+                         ? ""
+                         : val.toString());
         }
 
         out.writeInt(movements.size());
@@ -396,12 +420,11 @@ public class Manager implements Externalizable {
         for (int i = 0; i < size; i++) {
             String accountName = in.readUTF();
             String budgetName = in.readUTF();
-//            String value = in.readUTF();
+            String value = in.readUTF();
 
-            links(accountName, budgetName);
-//            link.value = value.equals("")
-//                         ? null
-//                         : new BigDecimal(value);
+            link(accountName, budgetName, value.equals("")
+                                           ? null
+                                           : new BigDecimal(value));
         }
 
         size = in.readInt();
@@ -454,12 +477,18 @@ public class Manager implements Externalizable {
          * link is managed by the manager, otherwise the given value indicate
          * the amount of money of the account reserved to the budget.
          */
-        BigDecimal value;
+        BigDecimal value = null;
 
+        /**
+         * Create a link between the given account & budget. No value is given
+         * to this link, if you want to do this do it manually (affecting the
+         * {@link Link#value} field).
+         * @param account the account to link
+         * @param budget the budget to link
+         */
         public Link(Account account, Budget budget) {
             this.account = account;
             this.budget = budget;
-            this.value = null;
         }
 
         /**
