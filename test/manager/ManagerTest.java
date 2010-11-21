@@ -191,7 +191,6 @@ public class ManagerTest {
 
     @Test
     public void movementsTest() {
-        //TODO add a test to see if the complete list of movements can be gotten
         Manager manager = new Manager3by2();
         Account a1 = manager.getAccount("1");
         Account a2 = manager.getAccount("2");
