@@ -30,6 +30,9 @@ import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
+import util.Crypto;
 
 /**
  * A manager is a container for accounts and budgets. It offers several methods
@@ -214,15 +217,41 @@ public class Manager implements Externalizable {
     }
 
     /**
-     * Save the content of this manager to the given file.
-     * @param filePath the file path where the manager must be saved
+     * Same as {@link #save(java.lang.String, java.lang.String) } with a null
+     * password.
      */
     public void save(String filePath) {
+        save(filePath, null);
+    }
+
+    /**
+     * Same as {@link #getSaved(java.lang.String, java.lang.String) } with a null
+     * password.
+     */
+    public static Manager getSaved(String filePath) {
+        return getSaved(filePath, null);
+    }
+
+    /**
+     * Save the content of this manager to the given file. If a password is
+     * given (not null) the file is encrypted.
+     * @param filePath the file path where the manager must be saved
+     * @param password the password to encrypt the file
+     */
+    public void save(String filePath, String password) {
         FileOutputStream fos = null;
+        CipherOutputStream cos = null;
         ObjectOutputStream oos = null;
         try {
             fos = new FileOutputStream(filePath);
-            oos = new ObjectOutputStream(fos);
+            if (password != null) {
+                cos = new CipherOutputStream(fos, Crypto.getCipher(
+                        Crypto.CipherMode.ENCODE,
+                        password));
+                oos = new ObjectOutputStream(cos);
+            } else {
+                oos = new ObjectOutputStream(fos);
+            }
             oos.writeObject(this);
             oos.flush();
         } catch (FileNotFoundException ex) {
@@ -239,6 +268,14 @@ public class Manager implements Externalizable {
                         log(Level.SEVERE, null, ex);
             }
             try {
+                if (password != null) {
+                    cos.close();
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(Manager.class.getName()).
+                        log(Level.SEVERE, null, ex);
+            }
+            try {
                 fos.close();
             } catch (IOException ex) {
                 Logger.getLogger(Manager.class.getName()).
@@ -248,18 +285,28 @@ public class Manager implements Externalizable {
     }
 
     /**
-     * Recover the content of a manager from the given file.
+     * Recover the content of a manager from the given file. If a password is
+     * given (not null) it will be used to decrypt the file (so do not give one
+     * if the file is not encrypted).
      * @param filePath the file path where the manager is saved
+     * @param password the password to decrypt the file
      * @return the manager recovered, null if there is an error
      */
-    public static Manager getSaved(String filePath) {
+    public static Manager getSaved(String filePath, String password) {
         FileInputStream fis = null;
+        CipherInputStream cis = null;
         ObjectInputStream ois = null;
         Manager manager = null;
         try {
             fis = new FileInputStream(filePath);
             try {
-                ois = new ObjectInputStream(fis);
+                if (password != null) {
+                    cis = new CipherInputStream(fis, Crypto.getCipher(
+                            Crypto.CipherMode.DECODE, password));
+                    ois = new ObjectInputStream(cis);
+                } else {
+                    ois = new ObjectInputStream(fis);
+                }
                 try {
                     manager = (Manager) ois.readObject();
                 } catch (ClassNotFoundException ex) {
@@ -267,6 +314,9 @@ public class Manager implements Externalizable {
                             log(Level.SEVERE, null, ex);
                 }
                 ois.close();
+                if (cis != null) {
+                    cis.close();
+                }
             } catch (IOException ex) {
                 Logger.getLogger(Manager.class.getName()).
                         log(Level.SEVERE, null, ex);

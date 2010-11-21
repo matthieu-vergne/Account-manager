@@ -287,8 +287,9 @@ public class ManagerTest {
         b2.setValue(valueB2);
 
         String path = "persistenceTest.sav";
-        manager.save(path);
-        Manager manager2 = Manager.getSaved(path);
+        String password = "pass";
+        manager.save(path, password);
+        Manager manager2 = Manager.getSaved(path, password);
 
         assertArrayEquals(manager.getAccountNames(), manager2.getAccountNames());
         assertArrayEquals(manager.getBudgetNames(), manager2.getBudgetNames());
