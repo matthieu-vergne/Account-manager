@@ -1,10 +1,9 @@
 package manager;
 
-import java.beans.Encoder;
-import java.beans.Expression;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.math.BigDecimal;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -19,12 +18,15 @@ import accountancy.accounts.Account;
 import accountancy.budgets.Budget;
 import accountancy.movements.Movement;
 import accountancy.movements.Movement.Sense;
-import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
-import java.io.File;
+import java.io.Externalizable;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,7 +38,7 @@ import java.util.logging.Logger;
  * @author Matthieu Vergne <matthieu.vergne@gmail.com>
  * 
  */
-public class Manager implements Serializable {
+public class Manager implements Externalizable {
 
     /**
      * The list of accounts, sorted by name.
@@ -72,6 +74,22 @@ public class Manager implements Serializable {
 
     public Set<Budget> getBudgets() {
         return budgets;
+    }
+
+    /**
+     *
+     * @return the list of the names of all the accounts
+     */
+    public String[] getAccountNames() {
+        return getElementNames(accounts);
+    }
+
+    /**
+     *
+     * @return the list of the names of all the budgets
+     */
+    public String[] getBudgetNames() {
+        return getElementNames(budgets);
     }
 
     /**
@@ -130,13 +148,29 @@ public class Manager implements Serializable {
         }
         return null;
     }
+
+    /**
+     * @return The names of the elements of the given list
+     */
+    private <T extends AccountancyElement> String[] getElementNames(Set<T> list) {
+        if (list == null) {
+            throw new NullPointerException("the list cannot be null");
+        }
+
+        List<String> names = new ArrayList<String>();
+        for (Iterator<T> iterator = list.iterator(); iterator.hasNext();) {
+            T element = iterator.next();
+            names.add(element.getName());
+        }
+        return names.toArray(new String[0]);
+    }
     /**
      * The list of links between accounts and budgets. It is a set because it is
      * too complex to manage several links on the same account and budget and no
      * specific advantages. Prefer to change the links possibilities instead of
      * make some strange linking.
      */
-    final private Set<Link> links = new HashSet<Link>();
+    private final Set<Link> links = new HashSet<Link>();
     /**
      * The last ID generated in this manager.
      */
@@ -184,7 +218,33 @@ public class Manager implements Serializable {
      * @param filePath the file path where the manager must be saved
      */
     public void save(String filePath) {
-        throw new RuntimeException("not yet implemented");
+        FileOutputStream fos = null;
+        ObjectOutputStream oos = null;
+        try {
+            fos = new FileOutputStream(filePath);
+            oos = new ObjectOutputStream(fos);
+            oos.writeObject(this);
+            oos.flush();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Manager.class.getName()).
+                    log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Manager.class.getName()).
+                    log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                oos.close();
+            } catch (IOException ex) {
+                Logger.getLogger(Manager.class.getName()).
+                        log(Level.SEVERE, null, ex);
+            }
+            try {
+                fos.close();
+            } catch (IOException ex) {
+                Logger.getLogger(Manager.class.getName()).
+                        log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     /**
@@ -193,7 +253,138 @@ public class Manager implements Serializable {
      * @return the manager recovered, null if there is an error
      */
     public static Manager getSaved(String filePath) {
-        throw new RuntimeException("not yet implemented");
+        FileInputStream fis = null;
+        ObjectInputStream ois = null;
+        Manager manager = null;
+        try {
+            fis = new FileInputStream(filePath);
+            try {
+                ois = new ObjectInputStream(fis);
+                try {
+                    manager = (Manager) ois.readObject();
+                } catch (ClassNotFoundException ex) {
+                    Logger.getLogger(Manager.class.getName()).
+                            log(Level.SEVERE, null, ex);
+                }
+                ois.close();
+            } catch (IOException ex) {
+                Logger.getLogger(Manager.class.getName()).
+                        log(Level.SEVERE, null, ex);
+            }
+            try {
+                fis.close();
+            } catch (IOException ex) {
+                Logger.getLogger(Manager.class.getName()).
+                        log(Level.SEVERE, null, ex);
+            }
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Manager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return manager;
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeUTF(this.lastGeneratedId.toString());
+
+        out.writeInt(accounts.size());
+        for (Account account : accounts) {
+            out.writeObject(account);
+        }
+
+        out.writeInt(budgets.size());
+        for (Budget budget : budgets) {
+            out.writeObject(budget);
+        }
+
+        out.writeInt(links.size());
+        for (Link link : links) {
+            out.writeUTF(link.account.getName());
+            out.writeUTF(link.budget.getName());
+//            BigDecimal val = link.value;
+//            out.writeUTF(val == null
+//                         ? ""
+//                         : val.toString());
+        }
+
+        out.writeInt(movements.size());
+        for (Map.Entry<BigDecimal, Movement> entry : movements.entrySet()) {
+            BigDecimal id = entry.getKey();
+            Movement movement = entry.getValue();
+
+            out.writeUTF(id.toString());
+            out.writeUTF(movement.getAccount().getName());
+            out.writeObject(movement.getSense());
+            out.writeUTF(movement.getValue().toString());
+            out.writeBoolean(movement.isLocked());
+
+            out.writeInt(movement.getBudgetsAssigned().length);
+            for (Budget budget : movement.getBudgetsAssigned()) {
+                out.writeUTF(budget.getName());
+                out.writeUTF(movement.getValueForBudget(budget).toString());
+            }
+        }
+
+        out.flush();
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException,
+            ClassNotFoundException {
+        this.lastGeneratedId = new BigDecimal(in.readUTF());
+
+        Map<String, Account> accountMap = new HashMap<String, Account>();
+        int size = in.readInt();
+        for (int i = 0; i < size; i++) {
+            Account account = (Account) in.readObject();
+            accountMap.put(account.getName(), account);
+            accounts.add(account);
+        }
+
+        Map<String, Budget> budgetMap = new HashMap<String, Budget>();
+        size = in.readInt();
+        for (int i = 0; i < size; i++) {
+            Budget budget = (Budget) in.readObject();
+            budgetMap.put(budget.getName(), budget);
+            budgets.add(budget);
+        }
+
+        size = in.readInt();
+        for (int i = 0; i < size; i++) {
+            String accountName = in.readUTF();
+            String budgetName = in.readUTF();
+//            String value = in.readUTF();
+
+            links(accountName, budgetName);
+//            link.value = value.equals("")
+//                         ? null
+//                         : new BigDecimal(value);
+        }
+
+        size = in.readInt();
+        for (int i = 0; i < size; i++) {
+            BigDecimal id = new BigDecimal(in.readUTF());
+            Account account = accountMap.get(in.readUTF());
+            Sense sense = (Sense) in.readObject();
+            BigDecimal value = new BigDecimal(in.readUTF());
+            boolean locked = in.readBoolean();
+
+            Movement movement = new Movement();
+            movement.setAccount(account);
+            movement.setSense(sense);
+            movement.setValue(value);
+
+            int size2 = in.readInt();
+            for (int j = 0; j < size2; j++) {
+                Budget budget = budgetMap.get(in.readUTF());
+                BigDecimal value2 = new BigDecimal(in.readUTF());
+
+                movement.assignValueToBudget(budget, value2);
+            }
+
+            movement.setLocked(locked);
+            movements.put(id, movement);
+        }
     }
 
     /**
@@ -235,8 +426,9 @@ public class Manager implements Serializable {
          * @return true if the link manage the given element, false otherwise
          */
         public <T extends AccountancyElement> boolean linksTheElement(T element) {
-            return (element instanceof Account) ? account.equals(element)
-                    : budget.equals(element);
+            return (element instanceof Account)
+                   ? account.equals(element)
+                   : budget.equals(element);
         }
 
         /**
@@ -262,6 +454,15 @@ public class Manager implements Serializable {
         @Override
         public int hashCode() {
             return account.hashCode() + budget.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            String string = account.getName() + " -> " + budget.getName();
+            if (value != null) {
+                string += " (" + value + ")";
+            }
+            return string;
         }
     }
 
@@ -395,7 +596,8 @@ public class Manager implements Serializable {
         for (Link link : links) {
             if (link.linksTheElement(element)) {
                 AccountancyElement linkedElement = element instanceof Budget
-                        ? link.account : link.budget;
+                                                   ? link.account
+                                                   : link.budget;
                 linkedNames.add(linkedElement.getName());
             }
         }
@@ -511,7 +713,8 @@ public class Manager implements Serializable {
             // we create the same movement but in the other sense
             Movement antiMovement = movement.clone();
             antiMovement.setSense(movement.getSense() == Sense.INPUT
-                    ? Sense.OUTPUT : Sense.INPUT);
+                                  ? Sense.OUTPUT
+                                  : Sense.INPUT);
 
             // we compensate the original movement effects applying the opposite
             // movement, now it is the same as if the original movement was

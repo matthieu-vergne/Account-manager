@@ -10,7 +10,8 @@ import java.math.BigDecimal;
  * @author Matthieu Vergne <matthieu.vergne@gmail.com>
  * 
  */
-public class AccountancyElement implements Comparable<AccountancyElement>, Serializable {
+public class AccountancyElement implements Comparable<AccountancyElement>,
+        Serializable {
 
     /**
      * The name applied at the creation of the element.
@@ -62,5 +63,10 @@ public class AccountancyElement implements Comparable<AccountancyElement>, Seria
      */
     public int compareTo(AccountancyElement e) {
         return getName().compareTo(e.getName());
+    }
+
+    @Override
+    public String toString() {
+        return getName() + " (" + getValue() + ")";
     }
 }

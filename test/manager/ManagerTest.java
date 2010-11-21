@@ -17,6 +17,7 @@ import accountancy.accounts.Account;
 import accountancy.budgets.Budget;
 import accountancy.movements.Movement;
 import accountancy.movements.Movement.Sense;
+import java.io.File;
 
 public class ManagerTest {
 
@@ -246,15 +247,53 @@ public class ManagerTest {
 
     @Test
     public void savingTest() {
-        Manager manager = new Manager3by2();
-        String path = "test.xml";
+        Manager manager = new Manager();
+
+        Account a1 = new Account();
+        a1.setName("1");
+        manager.addAccount(a1);
+
+        Account a2 = new Account();
+        a2.setName("2");
+        manager.addAccount(a2);
+
+        Account a3 = new Account();
+        a3.setName("3");
+        manager.addAccount(a3);
+
+        Budget b1 = new Budget();
+        b1.setName("1");
+        manager.addBudget(b1);
+
+        Budget b2 = new Budget();
+        b2.setName("2");
+        manager.addBudget(b2);
+
+        manager.links(a1.getName(), b1.getName());
+        manager.links(a2.getName(), b1.getName());
+        manager.links(a2.getName(), b2.getName());
+        manager.links(a3.getName(), b2.getName());
+
+        BigDecimal valueA1 = new BigDecimal("100");
+        BigDecimal valueA2 = new BigDecimal("100");
+        BigDecimal valueA3 = new BigDecimal("100");
+        BigDecimal valueB1 = new BigDecimal("150");
+        BigDecimal valueB2 = new BigDecimal("150");
+
+        a1.setValue(valueA1);
+        a2.setValue(valueA2);
+        a3.setValue(valueA3);
+        b1.setValue(valueB1);
+        b2.setValue(valueB2);
+
+        String path = "persistenceTest.sav";
         manager.save(path);
         Manager manager2 = Manager.getSaved(path);
+        File f = new File(path);
+        f.delete();
 
-        assertArrayEquals(manager.getAccounts().toArray(), manager2.getAccounts().
-                toArray());
-        assertArrayEquals(manager.getBudgets().toArray(), manager2.getBudgets().
-                toArray());
+        assertArrayEquals(manager.getAccountNames(), manager2.getAccountNames());
+        assertArrayEquals(manager.getBudgetNames(), manager2.getBudgetNames());
         assertArrayEquals(manager.getMovementsIDs(), manager2.getMovementsIDs());
 
         for (Account account : manager.getAccounts()) {
@@ -274,12 +313,27 @@ public class ManagerTest {
         }
 
         for (Account account : manager.getAccounts()) {
-            for (Budget budget : manager.getBudgets()) {
-                final BigDecimal value1 = manager.getLinkValue(account.getName(), budget.
-                        getName());
-                final BigDecimal value2 = manager2.getLinkValue(
-                        account.getName(), budget.getName());
-                assertEquals(value1, value2);
+            String accountName = account.getName();
+            final String[] list1 =
+                           manager.getBudgetsLinkedToAccount(accountName);
+            final String[] list2 = manager2.getBudgetsLinkedToAccount(
+                    accountName);
+            assertArrayEquals(list1, list2);
+            for (String budgetName : list1) {
+                assertEquals(manager.getLinkValue(accountName, budgetName), manager2.
+                        getLinkValue(accountName, budgetName));
+            }
+        }
+
+        for (Budget budget : manager.getBudgets()) {
+            String budgetName = budget.getName();
+            final String[] list1 = manager.getAccountsLinkedToBudget(budgetName);
+            final String[] list2 =
+                           manager2.getAccountsLinkedToBudget(budgetName);
+            assertArrayEquals(list1, list2);
+            for (String accountName : list1) {
+                assertEquals(manager.getLinkValue(accountName, budgetName), manager2.
+                        getLinkValue(accountName, budgetName));
             }
         }
 
