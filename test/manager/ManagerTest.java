@@ -278,7 +278,7 @@ public class ManagerTest {
             manager.addMovement(new Movement()),
             manager.addMovement(new Movement()),
             manager.addMovement(new Movement()),};
-        assertArrayEquals(movementsIds, manager.getMovementsIDs());
+        assertArrayEquals(movementsIds, manager.getMovementsIDs().toArray());
     }
 
     @Test
@@ -359,7 +359,8 @@ public class ManagerTest {
 
         assertArrayEquals(manager.getAccountNames(), manager2.getAccountNames());
         assertArrayEquals(manager.getBudgetNames(), manager2.getBudgetNames());
-        assertArrayEquals(manager.getMovementsIDs(), manager2.getMovementsIDs());
+        assertArrayEquals(manager.getMovementsIDs().toArray(), manager2.
+                getMovementsIDs().toArray());
 
         for (Account account : manager.getAccounts()) {
             String accountName = account.getName();

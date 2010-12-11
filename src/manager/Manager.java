@@ -236,8 +236,8 @@ public class Manager implements Externalizable {
      *
      * @return the list of the IDs known by the manager
      */
-    public BigDecimal[] getMovementsIDs() {
-        return movements.keySet().toArray(new BigDecimal[]{});
+    public Set<BigDecimal> getMovementsIDs() {
+        return movements.keySet();
     }
 
     /**
