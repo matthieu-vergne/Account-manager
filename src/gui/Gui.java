@@ -1,108 +1,111 @@
 package gui;
 
-import accountancy.accounts.Account;
-import accountancy.budgets.Budget;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.LayoutManager;
 import java.math.BigDecimal;
 import java.util.Collection;
+
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
-import javax.swing.table.DefaultTableColumnModel;
+
 import manager.Manager;
+import accountancy.accounts.Account;
+import accountancy.budgets.Budget;
 
 /**
- *
+ * 
  * @author Matthieu Vergne <matthieu.vergne@gmail.com>
  */
 public class Gui extends JFrame {
 
-    private Manager manager;
+	private static final long serialVersionUID = 1L;
 
-    public static void main(String args[]) {
-        new Gui().setVisible(true);
-    }
+	private Manager manager;
 
-    public Gui() {
-        setTitle("Account Manager");
+	public static void main(String args[]) {
+		new Gui().setVisible(true);
+	}
 
-        initManager();
+	public Gui() {
+		setTitle("Account Manager");
 
-        initComponents();
-        setSize(new Dimension(400, 600));
+		initManager();
 
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-    }
+		initComponents();
+		setSize(new Dimension(400, 600));
 
-    private void initComponents() {
-        LayoutManager layout = new GridLayout(1, 1);
-        setLayout(layout);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+	}
 
-        JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.add("Accounts", createAccountsTab());
-        tabbedPane.add("Budgets", createBudgetsTab());
-        tabbedPane.add("Movements", createMovementTab());
-        layout.addLayoutComponent(null, tabbedPane);
-        add(tabbedPane);
-    }
+	private void initComponents() {
+		LayoutManager layout = new GridLayout(1, 1);
+		setLayout(layout);
 
-    private JPanel createAccountsTab() {
-        return createTableStuff(manager.getAccounts());
-    }
+		JTabbedPane tabbedPane = new JTabbedPane();
+		tabbedPane.add("Accounts", createAccountsTab());
+		tabbedPane.add("Budgets", createBudgetsTab());
+		tabbedPane.add("Movements", createMovementTab());
+		layout.addLayoutComponent(null, tabbedPane);
+		add(tabbedPane);
+	}
 
-    private JPanel createBudgetsTab() {
-        return createTableStuff(manager.getBudgets());
-    }
+	private JPanel createAccountsTab() {
+		return createTableStuff(manager.getAccounts());
+	}
 
-    private JPanel createMovementTab() {
-        return createTableStuff(manager.getMovementsIDs());
-    }
+	private JPanel createBudgetsTab() {
+		return createTableStuff(manager.getBudgets());
+	}
 
-    private <T> JPanel createTableStuff(Collection<T> tableContent) {
-        LayoutManager layout = new GridLayout(2, 3);
-        JPanel container = new JPanel(layout);
+	private JPanel createMovementTab() {
+		return createTableStuff(manager.getMovementsIDs());
+	}
 
-        JTable table = new JTable();
-        table.setAutoCreateColumnsFromModel(true);
-        table.setModel(new TableModel<T>(tableContent));
-        layout.addLayoutComponent(null, table);
-        container.add(table);
-        return container;
-    }
+	private <T> JPanel createTableStuff(Collection<T> tableContent) {
+		LayoutManager layout = new GridLayout(2, 3);
+		JPanel container = new JPanel(layout);
 
-    private void initManager() {
-        //TODO replace this test case by a save reading
-        manager = new Manager();
+		JTable table = new JTable();
+		table.setAutoCreateColumnsFromModel(true);
+		table.setModel(new TableModel<T>(tableContent));
+		layout.addLayoutComponent(null, table);
+		container.add(table);
+		return container;
+	}
 
-        Account account = new Account();
-        account.setName("A1");
-        account.setValue(new BigDecimal("100"));
-        account.setLimit(new BigDecimal("1000"));
-        manager.addAccount(account);
+	private void initManager() {
+		// TODO replace this test case by a save reading
+		manager = new Manager();
 
-        account = new Account();
-        account.setName("A2");
-        account.setValue(new BigDecimal("200"));
-        account.setLimit(new BigDecimal("2000"));
-        manager.addAccount(account);
+		Account account = new Account();
+		account.setName("A1");
+		account.setValue(new BigDecimal("100"));
+		account.setLimit(new BigDecimal("1000"));
+		manager.addAccount(account);
 
-        account = new Account();
-        account.setName("A3");
-        account.setValue(new BigDecimal("300"));
-        account.setLimit(new BigDecimal("3000"));
-        manager.addAccount(account);
+		account = new Account();
+		account.setName("A2");
+		account.setValue(new BigDecimal("200"));
+		account.setLimit(new BigDecimal("2000"));
+		manager.addAccount(account);
 
-        Budget budget = new Budget();
-        budget.setName("B1");
-        budget.setValue(new BigDecimal("100"));
-        manager.addBudget(budget);
+		account = new Account();
+		account.setName("A3");
+		account.setValue(new BigDecimal("300"));
+		account.setLimit(new BigDecimal("3000"));
+		manager.addAccount(account);
 
-        budget = new Budget();
-        budget.setName("B2");
-        budget.setValue(new BigDecimal("200"));
-        manager.addBudget(budget);
-    }
+		Budget budget = new Budget();
+		budget.setName("B1");
+		budget.setValue(new BigDecimal("100"));
+		manager.addBudget(budget);
+
+		budget = new Budget();
+		budget.setName("B2");
+		budget.setValue(new BigDecimal("200"));
+		manager.addBudget(budget);
+	}
 }

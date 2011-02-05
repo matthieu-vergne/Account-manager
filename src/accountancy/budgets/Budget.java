@@ -11,4 +11,6 @@ import accountancy.AccountancyElement;
  */
 public class Budget extends AccountancyElement {
 
+	private static final long serialVersionUID = 1L;
+
 }

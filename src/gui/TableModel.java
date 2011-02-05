@@ -1,12 +1,13 @@
 package gui;
 
-import accountancy.AccountancyElement;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import javax.swing.event.TableModelListener;
+
 import accountancy.accounts.Account;
 import accountancy.budgets.Budget;
 import accountancy.movements.Movement;
-import java.util.ArrayList;
-import java.util.Collection;
-import javax.swing.event.TableModelListener;
 
 /**
  *
