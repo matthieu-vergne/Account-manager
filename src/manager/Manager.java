@@ -241,6 +241,14 @@ public class Manager implements Externalizable {
     }
 
     /**
+     *
+     * @return the list of the movements contained by the manager.
+     */
+    public Set<Movement> getMovements() {
+        return new HashSet<Movement>(movements.values());
+    }
+
+    /**
      * Same as {@link #save(java.lang.String, java.lang.String) } with a null
      * password.
      */
@@ -423,8 +431,8 @@ public class Manager implements Externalizable {
             String value = in.readUTF();
 
             link(accountName, budgetName, value.equals("")
-                                           ? null
-                                           : new BigDecimal(value));
+                                          ? null
+                                          : new BigDecimal(value));
         }
 
         size = in.readInt();
