@@ -12,8 +12,8 @@ import java.util.TreeMap;
 /**
  * A movement represent a transfer of money assigned to an account and,
  * relatively to this account, possibly some budgets. A movement can be an input
- * (increase the value of the element) or an output (decrease the value of the
- * element).
+ * (increase the value of the elements) or an output (decrease the value of the
+ * elements).
  * 
  * @author Matthieu Vergne <matthieu.vergne@gmail.com>
  * 
@@ -214,5 +214,21 @@ public class Movement implements Cloneable {
     @Override
     public String toString() {
         return account.getName() + " (" + getValue() + ")";
+    }
+
+    /**
+     *
+     * @return true if the value is strictly positive
+     */
+    public boolean isInput() {
+        return getValue().compareTo(BigDecimal.ZERO) > 0;
+    }
+
+    /**
+     *
+     * @return true if the value is strictly negative
+     */
+    public boolean isOutput() {
+        return getValue().compareTo(BigDecimal.ZERO) < 0;
     }
 }

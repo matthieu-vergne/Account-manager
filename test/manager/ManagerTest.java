@@ -17,7 +17,6 @@ import accountancy.accounts.Account;
 import accountancy.budgets.Budget;
 import accountancy.movements.Movement;
 import accountancy.movements.Movement.Sense;
-import java.io.File;
 
 public class ManagerTest {
 

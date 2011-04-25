@@ -13,7 +13,9 @@ import java.math.BigDecimal;
 public class AccountancyElement implements Comparable<AccountancyElement>,
         Serializable {
 
-    /**
+	private static final long serialVersionUID = 1L;
+	
+	/**
      * The name applied at the creation of the element.
      */
     public static final String DEFAULT_NAME = "<unnamed>";

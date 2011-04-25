@@ -18,32 +18,31 @@ public class MovementTest {
         
         movement.setAccount(new Account());
         movement.setValue(new BigDecimal("100"));
-        movement.setSense(Sense.INPUT);
         movement.assignValueToBudget(new Budget(), new BigDecimal("100"));
         
         movement.setLocked(true);
         assertTrue(movement.isLocked());
         try {
             movement.setAccount(new Account());
-            fail("no exeption thrown");
+            fail("no exception thrown");
         }
         catch (LockedMovementException ex) {
         }
         try {
             movement.setValue(new BigDecimal("100"));
-            fail("no exeption thrown");
+            fail("no exception thrown");
         }
         catch (LockedMovementException ex) {
         }
         try {
             movement.setSense(Sense.INPUT);
-            fail("no exeption thrown");
+            fail("no exception thrown");
         }
         catch (LockedMovementException ex) {
         }
         try {
             movement.assignValueToBudget(new Budget(), new BigDecimal("100"));
-            fail("no exeption thrown");
+            fail("no exception thrown");
         }
         catch (LockedMovementException ex) {
         }
@@ -52,20 +51,22 @@ public class MovementTest {
         assertFalse(movement.isLocked());
         movement.setAccount(new Account());
         movement.setValue(new BigDecimal("500"));
-        movement.setSense(Sense.OUTPUT);
         movement.assignValueToBudget(new Budget(), new BigDecimal("100"));
     }
     
     @Test
-    public void senseTest() {
+    public void inputOutputTest() {
         Movement movement = new Movement();
-        assertEquals(movement.getSense(), Sense.INPUT);
+        assertFalse(movement.isInput());
+        assertFalse(movement.isOutput());
         
-        movement.setSense(Sense.OUTPUT);
-        assertEquals(Sense.OUTPUT, movement.getSense());
+        movement.setValue(new BigDecimal("100"));
+        assertTrue(movement.isInput());
+        assertFalse(movement.isOutput());
         
-        movement.setSense(Sense.INPUT);
-        assertEquals(Sense.INPUT, movement.getSense());
+        movement.setValue(new BigDecimal("-100"));
+        assertFalse(movement.isInput());
+        assertTrue(movement.isOutput());
     }
     
     @Test
@@ -73,9 +74,14 @@ public class MovementTest {
         Movement movement = new Movement();
         assertEquals(BigDecimal.ZERO, movement.getValue());
         
-        BigDecimal value = new BigDecimal("200");
-        movement.setValue(value);
-        assertEquals(value, movement.getValue());
+        String value = "200";
+        movement.setValue(new BigDecimal(value));
+        assertEquals(value, movement.getValue().toString());
+
+        value = "-300.5664";
+        movement.setValue(new BigDecimal(value));
+        assertEquals(value, movement.getValue().toString());
+
     }
     
     @Test

@@ -1,38 +1,39 @@
 package manager;
 
+import java.io.Externalizable;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
+import javax.naming.LinkException;
+
+import util.Crypto;
 import accountancy.AccountancyElement;
 import accountancy.accounts.Account;
 import accountancy.budgets.Budget;
 import accountancy.movements.Movement;
 import accountancy.movements.Movement.Sense;
-import java.io.Externalizable;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.HashMap;
-import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.crypto.CipherInputStream;
-import javax.crypto.CipherOutputStream;
-import util.Crypto;
 
 /**
  * A manager is a container for accounts and budgets. It offers several methods

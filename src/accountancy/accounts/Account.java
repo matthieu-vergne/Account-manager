@@ -1,9 +1,9 @@
 package accountancy.accounts;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 
 import accountancy.AccountancyElement;
-import java.io.IOException;
 
 /**
  * An account is a stock of money. It can have a limit, like a cap in a bank
@@ -14,7 +14,9 @@ import java.io.IOException;
  */
 public class Account extends AccountancyElement {
 
-    /**
+	private static final long serialVersionUID = 1L;
+	
+	/**
      * A high limit to simulate an infinite limit.<br/>
      * <br/>
      * <b>Be careful to the real limit (look the value of this constant).</b>
